@@ -1,0 +1,4 @@
+date,symbol,setup,trend,atr,signal_source,notes
+2026-11-18,BABA,short,n_down,0.0,manual+signals,−15.7% за неделю, фандинг +0.0416%/ч
+2026-11-18,LIT,short,n_down,0.0,signals,−15.3% за неделю, но фандинг отрицательный, макс плечо 5x
+2026-11-18,XMR,short,n_down,0.0,signals,−11.9% за неделю, фандинг отрицательный

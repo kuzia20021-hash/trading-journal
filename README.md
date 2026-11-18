@@ -1,2 +1,28 @@
 # trading-journal
-Personal trading journal, risk management and backtest harness adapted from TauricResearch/TradingAgents
+
+Личный торговый журнал, риск-менеджмент и бэктест-харнесс.
+Адаптация архитектуры [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents):
+мульти-агентная схема анализа + честный point-in-time бэктест.
+
+## Что здесь
+
+- `src/risk.py` — риск-менеджмент: размер позиции от свободной маржи и риска в R, стоп по ATR.
+- `src/backtest.py` — бэктест без look-ahead: решение на дату D оценивается по закрытию бара ПОСЛЕ D.
+- `src/stats.py` — статистика журнала: винрейт, средний R, максимальная просадка.
+- `journal/trades.csv` — журнал сделок (вход, стоп, цель, результат).
+- `data/observations.csv` — таблица наблюдений до входа в сделку.
+- `docs/agents.md` — роли агентов (техника, новости, сентимент, фундаментал → бык/медведь → риск).
+
+## Принципы
+
+1. Решение принимается на закрытии бара D, оценивается по закрытию следующего бара.
+2. Никаких данных, опубликованных позже даты решения.
+3. Риск на сделку фиксирован в R, размер считается от маржи, а не наоборот.
+4. Логировка обязательна: сделка без записи в журнал = ошибка процесса.
+
+## Использование
+
+```bash
+python src/stats.py journal/trades.csv
+python src/risk.py --equity 100 --risk-pct 1 --entry 87.02 --stop 89.65 --leverage 5
+```
