@@ -88,7 +88,7 @@ def simulate(bars: list, decisions: list, atr_mult: float = 2.0) -> BacktestResu
         else:
             exit_price, reason = bars[-1].close, "end_of_data"
 
-        r = (entry - exit_price) / risk if d.side == "long" else (exit_price - entry) / risk
+        r = (exit_price - entry) / risk if d.side == "long" else (entry - exit_price) / risk
         result.trades.append(Trade(d.date, bars[min(idx + 1, len(bars) - 1)].date, d.side,
                                    entry, exit_price, round(r, 3), reason, d.thesis))
         used = True
