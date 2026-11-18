@@ -39,7 +39,11 @@ def fetch_closes(yahoo_ticker: str, rng: str = "1y") -> Optional[List[float]]:
         req = urllib.request.Request(url, headers={"User-Agent": UA})
         data = json.loads(urllib.request.urlopen(req, timeout=25).read().decode())
         closes = data["chart"]["result"][0]["indicators"]["quote"][0]["close"]
-        return [x for x in closes if x is not None]
+        vals = [x for x in closes if x is not None]
+        # выкидываем мёртвые тикеры: нули или константа
+        if not vals or max(vals) <= 0 or len(set(vals)) <= 2:
+            return None
+        return vals
     except Exception:
         return None
 
@@ -115,6 +119,11 @@ EXTRA_YAHOO = {
     "HYPE": "HYPE-USD", "ZEC": "ZEC-USD", "LINK": "LINK-USD", "ADA": "ADA-USD",
     "MSTR": "MSTR", "MU": "MU", "INTC": "INTC", "SNDK": "SNDK", "AMD": "AMD",
     "AVAX": "AVAX-USD", "SUI": "SUI-USD", "DOGE": "DOGE-USD", "META": "META",
+    "GRAM": "TON-USD", "COIN": "COIN", "AMD-USD": "AMD", "SPY-ETF": "SPY",
+    "XRP": "XRP-USD", "SPCX": "SPCX", "CRCL": "CRCL", "OPENAI": "OPENAI",
+    "SAM": "SAMSUNGUSD", "LDO": "LDO-USD", "UNI": "UNI-USD", "ENA": "ENA-USD",
+    "WLFI": "WLFI-USD", "NBIS": "NBIS", "ASTER": "ASTER-USD", "XPL": "XPL-USD",
+    "DRAM": "DRAM", "SKHY": "SKHY", "USDKRW": "KRW=X", "USDJPY": "JPY=X",
 }
 
 
