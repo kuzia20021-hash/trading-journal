@@ -145,3 +145,28 @@ if __name__ == "__main__":
     print(f"Средний R: {s.avg_r} | Суммарный R: {s.total_r}")
     print(f"Лучшая: {s.best_r} | Худшая: {s.worst_r} | Макс. просадка: {s.max_drawdown_r} R")
     print(f"Средний win: {s.avg_win_r} | Средний loss: {s.avg_loss_r} | Матожидание: {s.expectancy} R")
+
+
+def by_regime(rows: list) -> dict:
+    """Разбивка результатов по режиму рынка на момент входа.
+
+    Пустые значения (сделки до включения фильтра) собираются в "н/д".
+    """
+    buckets: dict = {}
+    for r in rows:
+        key = r.get("regime") or "н/д"
+        b = buckets.setdefault(key, {"trades": 0, "wins": 0, "total_r": 0.0})
+        b["trades"] += 1
+        b["total_r"] += r["r"]
+        if r["r"] > 0:
+            b["wins"] += 1
+    out = {}
+    for k, b in buckets.items():
+        out[k] = {
+            "trades": b["trades"],
+            "wins": b["wins"],
+            "win_rate": round(b["wins"] / b["trades"] * 100, 1) if b["trades"] else 0.0,
+            "total_r": round(b["total_r"], 3),
+            "avg_r": round(b["total_r"] / b["trades"], 3) if b["trades"] else 0.0,
+        }
+    return out

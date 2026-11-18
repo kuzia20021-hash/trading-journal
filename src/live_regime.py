@@ -105,3 +105,54 @@ if __name__ == "__main__":
     a = p.parse_args()
     closes = fetch_closes(a.ticker)
     print(_json.dumps(recommend_margin(closes, a.margin), ensure_ascii=False, indent=2))
+
+
+# --- предторговый фильтр ---
+
+# тикер Walt -> тикер Yahoo (для тех, кого нет в YAHOO_TO_WALT, но история есть)
+EXTRA_YAHOO = {
+    "ZRO": "ZRO-USD", "NEAR": "NEAR-USD", "AAVE": "AAVE-USD", "WLD": "WLD-USD",
+    "HYPE": "HYPE-USD", "ZEC": "ZEC-USD", "LINK": "LINK-USD", "ADA": "ADA-USD",
+    "MSTR": "MSTR", "MU": "MU", "INTC": "INTC", "SNDK": "SNDK", "AMD": "AMD",
+    "AVAX": "AVAX-USD", "SUI": "SUI-USD", "DOGE": "DOGE-USD", "META": "META",
+}
+
+
+def yahoo_for(walt_symbol: str) -> Optional[str]:
+    """Тикер Yahoo для тикера Walt."""
+    for y, w in YAHOO_TO_WALT.items():
+        if w == walt_symbol:
+            return y
+    return EXTRA_YAHOO.get(walt_symbol)
+
+
+def pre_trade_check(walt_symbol: str, base_margin: float, **kw) -> dict:
+    """Проверка перед входом: режим рынка -> разрешённая маржа.
+
+    Возвращает:
+      allowed_margin — маржа с учётом риск-скейлинга
+      blocked       — True, если истории нет и вход не советуем
+      note          — человекочитаемое пояснение
+    """
+    y = yahoo_for(walt_symbol)
+    if not y:
+        return {"symbol": walt_symbol, "allowed_margin": 0.0, "blocked": True,
+                "note": f"нет исторических данных для {walt_symbol} - вход не советую",
+                "regime": None}
+    closes = fetch_closes(y)
+    if not closes:
+        return {"symbol": walt_symbol, "allowed_margin": 0.0, "blocked": True,
+                "note": f"не удалось загрузить историю {y} - вход не советую",
+                "regime": None}
+    a = analyze(closes, **kw)
+    if "error" in a:
+        return {"symbol": walt_symbol, "allowed_margin": 0.0, "blocked": True,
+                "note": "недостаточно истории для расчёта режима", "regime": None}
+    a["symbol"] = walt_symbol
+    a["yahoo_ticker"] = y
+    a["allowed_margin"] = round(base_margin * a["risk_multiplier"], 2)
+    a["base_margin"] = round(base_margin, 2)
+    a["blocked"] = False
+    a["note"] = (f"{a['label']}: маржа {a['allowed_margin']}$ из {base_margin}$ "
+                 f"(turbulence {a['turbulence']}, просадка 60д {a['drawdown_pct']}%)")
+    return a
