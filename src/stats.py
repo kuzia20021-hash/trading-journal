@@ -41,7 +41,9 @@ def load(path: str) -> list:
             if not r.get("r"):
                 continue
             rows.append({"r": float(r["r"]), "side": r.get("side", ""),
-                         "reason": r.get("reason", ""), "symbol": r.get("symbol", "")})
+                         "reason": r.get("reason", ""), "symbol": r.get("symbol", ""),
+                         "regime": (r.get("regime") or "").strip(),
+                         "margin": r.get("margin", ""), "leverage": r.get("leverage", "")})
     return rows
 
 
